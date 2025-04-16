@@ -4,6 +4,7 @@ Before starting, please run the following command in your terminal to ensure the
 
 ```sh
 chmod 0600 ./.snowflake/config.toml
+chmod 0600 ./.snowflake/connections.toml
 ```
 
 **IMPORTANT**: 
