@@ -32,7 +32,8 @@
                 }
             },
             "extensions": [
-                "ms-python.python"
+                "ms-python.python",
+                "snowflake.snowflake-vsc"
             ]
         }
     },
