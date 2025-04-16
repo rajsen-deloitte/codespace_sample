@@ -1,0 +1,40 @@
+{
+    "name": "Codespace Sample",
+    "build": {
+        "dockerfile": "./Dockerfile",
+        "context": "."
+    },
+    "hostRequirements": {
+        "cpus": 4,
+        "memory": "2gb",
+        "storage": "10gb"
+    },
+    "portsAttributes": {
+        "8888": {
+            "label": "Jupyter notebook port"
+        }
+    },
+    "forwardPorts": [8888],
+    "waitFor": "onCreateCommand",
+    "customizations": {
+        "codespaces": {
+            "openFiles": ["./README.md"]
+        },
+        "vscode": {
+            "settings": {
+
+                "python.linting.enabled": true,
+                "python.linting.pylintEnabled": true,
+                "terminal.integrated.profiles.linux": {
+                    "bash": {
+                        "path": "/bin/bash"
+                    }
+                }
+            },
+            "extensions": [
+                "ms-python.python"
+            ]
+        }
+    },
+    "remoteUser": "root"
+}
