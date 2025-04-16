@@ -1,0 +1,9 @@
+[ccconnection]
+account = ""
+user = ""
+password = ""
+role = ""
+warehouse = ""
+database = ""
+schema = ""
+passcode_in_password = false
