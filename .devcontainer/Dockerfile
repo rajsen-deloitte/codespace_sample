@@ -23,6 +23,7 @@ RUN chmod +x /tmp/snowcli.sh && /tmp/snowcli.sh
 
 # Used by Snowflake CLI: set proper permissions on config.toml if it exists
 RUN if [ -f "$SNOWFLAKE_HOME/config.toml" ]; then chmod 0600 "$SNOWFLAKE_HOME/config.toml"; fi
+RUN if [ -f "$SNOWFLAKE_HOME/connections.toml" ]; then chmod 0600 "$SNOWFLAKE_HOME/connections.toml"; fi
 
 # Copy the entrypoint script and mark it executable
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
