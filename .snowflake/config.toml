@@ -1,0 +1,5 @@
+
+[cli.logs]
+save_logs = true
+path = "/workspaces/codespace_sample/.snowflake/logs"
+level = "info"

@@ -1,0 +1,5 @@
+# cli_cache
+.snowflake/.cli_version.cache
+.snowflake/logs/
+
+

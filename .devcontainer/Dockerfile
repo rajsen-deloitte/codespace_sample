@@ -1,61 +1,32 @@
-# This is the base image, which has miniconda installed.
-# You could use the 'anaconda' base image too; however the docker image 
-# size will be large feel free to change it to your needs.
-#
-# There are 2 versions of the FROM statement.
-# - The '--platform=linux/amd64' allows us to work locally, If you have a ARM-based system (e.g. Apple M1 M2...).
-#       However, this version has issues when running a streamlit app either in the
-#       local(docker) environment and also in a Github Codespace.
-#
-# - The one without the 'platform' allows you to run streamlit in a Github Codespace,
-#       However, this means that streamlit app cannot be developed via the local(docker)
-#       environment. 
-
-# This is the base image
+# Base image
 FROM mcr.microsoft.com/vscode/devcontainers/python:3.11
+LABEL maintainer="Enrique Plata"
 
-# FROM --platform=linux/amd64 continuumio/miniconda3 AS base
-# #FROM continuumio/miniconda3 AS base
-# LABEL maintainer="Enrique Plata"
-ENV APP_HOME /opt/notebooks
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# Set environment variables
+ENV APP_HOME=/usr/src/app
+ENV SNOWFLAKE_HOME=/workspaces/codespace_sample/.snowflake
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# # Update container OS and pip
-# FROM base AS installer
-# USER root
-RUN apt-get update
-#     apt-get install -y curl unzip && \
-#     echo "running in codespace" > /tmp/.is_codespace_env.txt
+# Update the package lists for upgrades for packages that need upgrading, as well as new packages that have just come to the repositories
+RUN apt-get update && \
+    apt-get install -y locales gcc && \
+    sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen && \
+    echo LANG=en_US.utf8 > /etc/default/locale && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# # Create a non-root user 'myuser' and set the user's home directory
-# RUN useradd -m myuser
+# Copy and run snowcli.sh during build
+COPY snowcli.sh /tmp/snowcli.sh
+RUN chmod +x /tmp/snowcli.sh && /tmp/snowcli.sh
 
-# # Switch to 'myuser'
-# USER myuser
+# Used by Snowflake CLI: set proper permissions on config.toml if it exists
+RUN if [ -f "$SNOWFLAKE_HOME/config.toml" ]; then chmod 0600 "$SNOWFLAKE_HOME/config.toml"; fi
 
-# SHELL ["conda", "run", "/bin/bash", "-c"]
-# RUN pip install --upgrade pip
-# RUN pip install --upgrade \
-#     snowflake-connector-python[pandas] \
-#     snowflake-sqlalchemy
+# Copy the entrypoint script and mark it executable
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# #Setting up Snowpark Python conda environment
-# FROM installer AS deps
-# COPY environment.yml /tmp/installation-scripts/
-# RUN conda create -n snowparkenv -c https://repo.anaconda.com/pkgs/snowflake python=3.10
-# SHELL ["conda", "run", "-n", "snowparkenv", "/bin/bash", "-c"]
-# RUN /opt/conda/bin/conda env update -f /tmp/installation-scripts/environment.yml
-
-# #Deploying Snowflake Connectors and Drivers
-# COPY install_snowflake.sh* /tmp/installation-scripts/
-# USER root
-# SHELL ["/bin/bash", "-c"]
-# RUN chmod +x /tmp/installation-scripts/install_snowflake.sh \
-#     && /tmp/installation-scripts/install_snowflake.sh \
-#     && rm -rf /tmp/installation-scripts/*
-
-# # Used by execution script to verify if we are running in a codespace docker environment 
-# RUN echo "running in codespace" > /tmp/.is_codespace_env.txt 
-
-# USER myuser
+# Execute the entrypoint script
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
